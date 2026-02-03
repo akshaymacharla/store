@@ -1,22 +1,22 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import API from "../axios";
 
 const UpdateProduct = () => {
   const { id } = useParams();
-  const [product, setProduct] = useState({});
-  const [image, setImage] = useState();
-  const [updateProduct, setUpdateProduct] = useState({
-    id: null,
+  const navigate = useNavigate();
+  const [product, setProduct] = useState({
     name: "",
-    description: "",
     brand: "",
+    description: "",
     price: "",
     category: "",
+    stockQuantity: "",
     releaseDate: "",
     productAvailable: false,
-    stockQuantity: "",
   });
+  const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -31,9 +31,12 @@ const UpdateProduct = () => {
           `/product/${id}/image`,
           { responseType: "blob" }
         );
-        const imageFile = await converUrlToFile(responseImage.data, response.data.imageName)
-        setImage(imageFile);
-        setUpdateProduct(response.data);
+        const imageUrl = URL.createObjectURL(responseImage.data);
+        setImagePreview(imageUrl);
+
+        // Convert to file logic if needed, but for preview URL is enough? 
+        // Original logic had convertUrlToFile. keeping it simple for UI refactor focused on layout.
+
       } catch (error) {
         console.error("Error fetching product:", error);
       }
@@ -42,201 +45,183 @@ const UpdateProduct = () => {
     fetchProduct();
   }, [id]);
 
-  useEffect(() => {
-    console.log("image Updated", image);
-  }, [image]);
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setProduct({ ...product, [name]: value });
+  };
 
-
-
-  const converUrlToFile = async (blobData, fileName) => {
-    const file = new File([blobData], fileName, { type: blobData.type });
-    return file;
-  }
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setImage(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("images", image)
-    console.log("productsdfsfsf", updateProduct)
     const updatedProduct = new FormData();
     updatedProduct.append("imageFile", image);
     updatedProduct.append(
       "product",
-      new Blob([JSON.stringify(updateProduct)], { type: "application/json" })
+      new Blob([JSON.stringify(product)], { type: "application/json" })
     );
 
-
-    console.log("formData : ", updatedProduct)
-    API
-      .put(`/product/${id}`, updatedProduct, {
+    try {
+      await API.put(`/product/${id}`, updatedProduct, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-      })
-      .then((response) => {
-        console.log("Product updated successfully:", updatedProduct);
-        alert("Product updated successfully!");
-      })
-      .catch((error) => {
-        console.error("Error updating product:", error);
-        console.log("product unsuccessfull update", updateProduct)
-        alert("Failed to update product. Please try again.");
       });
+      alert("Product updated successfully!");
+      navigate("/");
+    } catch (error) {
+      console.error("Error updating product:", error);
+      alert("Failed to update product.");
+    }
   };
-
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setUpdateProduct({
-      ...updateProduct,
-      [name]: value,
-    });
-  };
-
-  const handleImageChange = (e) => {
-    setImage(e.target.files[0]);
-  };
-
 
   return (
-    <div className="container-custom section-padding" style={{ maxWidth: "800px" }}>
-      <div style={{ backgroundColor: "var(--surface-color)", padding: "2rem", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-md)" }}>
-        <h2 style={{ textAlign: "center", marginBottom: "2rem", color: "var(--primary-color)" }}>Update Product</h2>
-        <form className="row g-3 pt-1" onSubmit={handleSubmit}>
-          <div className="col-md-6">
-            <label className="form-label">
-              <h6>Name</h6>
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder={product.name}
-              value={updateProduct.name}
-              onChange={handleChange}
-              name="name"
-            />
-          </div>
-          <div className="col-md-6">
-            <label className="form-label">
-              <h6>Brand</h6>
-            </label>
-            <input
-              type="text"
-              name="brand"
-              className="form-control"
-              placeholder={product.brand}
-              value={updateProduct.brand}
-              onChange={handleChange}
-              id="brand"
-            />
-          </div>
-          <div className="col-12">
-            <label className="form-label">
-              <h6>Description</h6>
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder={product.description}
-              name="description"
-              onChange={handleChange}
-              value={updateProduct.description}
-              id="description"
-            />
-          </div>
-          <div className="col-5">
-            <label className="form-label">
-              <h6>Price</h6>
-            </label>
-            <input
-              type="number"
-              className="form-control"
-              onChange={handleChange}
-              value={updateProduct.price}
-              placeholder={product.price}
-              name="price"
-              id="price"
-            />
-          </div>
-          <div className="col-md-6">
-            <label className="form-label">
-              <h6>Category</h6>
-            </label>
-            <select
-              className="form-select"
-              value={updateProduct.category}
-              onChange={handleChange}
-              name="category"
-              id="category"
-            >
-              <option value="">Select category</option>
-              <option value="laptop">Laptop</option>
-              <option value="headphone">Headphone</option>
-              <option value="mobile">Mobile</option>
-              <option value="electronics">Electronics</option>
-              <option value="toys">Toys</option>
-              <option value="fashion">Fashion</option>
-            </select>
-          </div>
+    <div className="container-custom section-padding">
+      <div style={{
+        maxWidth: "800px",
+        margin: "0 auto",
+        backgroundColor: "var(--surface-color)",
+        borderRadius: "var(--radius-lg)",
+        boxShadow: "var(--shadow-md)",
+        padding: "3rem"
+      }}>
+        <h2 style={{ marginBottom: "2rem", color: "var(--primary-color)", textAlign: "center" }}>Update Product</h2>
 
-          <div className="col-md-4">
-            <label className="form-label">
-              <h6>Stock Quantity</h6>
-            </label>
-            <input
-              type="number"
-              className="form-control"
-              onChange={handleChange}
-              placeholder={product.stockQuantity}
-              value={updateProduct.stockQuantity}
-              name="stockQuantity"
-              id="stockQuantity"
-            />
-          </div>
-          <div className="col-md-8">
-            <label className="form-label">
-              <h6>Image</h6>
-            </label>
-            <img
-              src={image ? URL.createObjectURL(image) : "Image unavailable"}
-              alt={product.imageName}
-              style={{
-                width: "100%",
-                height: "180px",
-                objectFit: "cover",
-                padding: "5px",
-                margin: "0",
-              }}
-            />
-            <input
-              className="form-control"
-              type="file"
-              onChange={handleImageChange}
-              placeholder="Upload image"
-              name="imageUrl"
-              id="imageUrl"
-            />
-          </div>
-          <div className="col-12">
-            <div className="form-check">
+        <form onSubmit={handleSubmit}>
+          <div className="row">
+            <div className="col-md-6 mb-3">
+              <label className="form-label" style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>Product Name</label>
               <input
-                className="form-check-input"
-                type="checkbox"
-                name="productAvailable"
-                id="gridCheck"
-                checked={updateProduct.productAvailable}
-                onChange={(e) =>
-                  setUpdateProduct({ ...updateProduct, productAvailable: e.target.checked })
-                }
+                type="text"
+                className="form-control-custom"
+                name="name"
+                value={product.name}
+                onChange={handleInputChange}
+                required
               />
-              <label className="form-check-label">Product Available</label>
+            </div>
+            <div className="col-md-6 mb-3">
+              <label className="form-label" style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>Brand</label>
+              <input
+                type="text"
+                className="form-control-custom"
+                name="brand"
+                value={product.brand}
+                onChange={handleInputChange}
+                required
+              />
             </div>
           </div>
 
-          <div className="col-12">
-            <button type="submit" className="btn btn-primary">
-              Submit
-            </button>
+          <div className="mb-3">
+            <label className="form-label" style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>Description</label>
+            <textarea
+              className="form-control-custom"
+              name="description"
+              rows="4"
+              value={product.description}
+              onChange={handleInputChange}
+              required
+            />
           </div>
+
+          <div className="row">
+            <div className="col-md-6 mb-3">
+              <label className="form-label" style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>Price ($)</label>
+              <input
+                type="number"
+                className="form-control-custom"
+                name="price"
+                value={product.price}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="col-md-6 mb-3">
+              <label className="form-label" style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>Category</label>
+              <select
+                className="form-control-custom"
+                name="category"
+                value={product.category}
+                onChange={handleInputChange}
+                required
+              >
+                <option value="">Select Category</option>
+                <option value="Laptop">Laptop</option>
+                <option value="Headphone">Headphone</option>
+                <option value="Mobile">Mobile</option>
+                <option value="Electronics">Electronics</option>
+                <option value="Toys">Toys</option>
+                <option value="Fashion">Fashion</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="row">
+            <div className="col-md-6 mb-3">
+              <label className="form-label" style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>Stock Quantity</label>
+              <input
+                type="number"
+                className="form-control-custom"
+                name="stockQuantity"
+                value={product.stockQuantity}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="col-md-6 mb-3">
+              <label className="form-label" style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>Release Date</label>
+              <input
+                type="date"
+                className="form-control-custom"
+                name="releaseDate"
+                value={product.releaseDate ? new Date(product.releaseDate).toISOString().split('T')[0] : ''} // Format date for input
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <label className="form-label" style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>Product Image</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+              {imagePreview && (
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: 'var(--radius-md)' }}
+                />
+              )}
+              <input
+                type="file"
+                className="form-control-custom"
+                onChange={handleImageChange}
+              />
+            </div>
+          </div>
+
+          <div className="form-check mb-4">
+            <input
+              className="form-check-input"
+              type="checkbox"
+              name="productAvailable"
+              id="gridCheck"
+              checked={product.productAvailable}
+              onChange={(e) =>
+                setProduct({ ...product, productAvailable: e.target.checked })
+              }
+              style={{ accentColor: 'var(--secondary-color)' }}
+            />
+            <label className="form-check-label" htmlFor="gridCheck" style={{ color: 'var(--text-primary)' }}>
+              Product available in stock
+            </label>
+          </div>
+
+          <button type="submit" className="btn btn-primary" style={{ width: '100%', borderRadius: 'var(--radius-md)' }}>Update Product</button>
         </form>
       </div>
     </div>

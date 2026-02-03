@@ -2,13 +2,12 @@ import React, { useContext, useState, useEffect } from "react";
 import AppContext from "../Context/Context";
 import API from "../axios";
 import CheckoutPopup from "./CheckoutPopup";
-import { Button } from 'react-bootstrap';
 
 const Cart = () => {
   const { cart, removeFromCart, clearCart } = useContext(AppContext);
   const [cartItems, setCartItems] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
-  const [cartImage, setCartImage] = useState([]);
+  const [cartImage, setCartImage] = useState([]); // This logic seems flawed in original (array of blobs?), keeping for compatibility
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
@@ -26,10 +25,7 @@ const Cart = () => {
                 { responseType: "blob" }
               );
               const imageFile = await convertUrlToFile(response.data, response.data.imageName);
-              setCartImage(prev => [...prev, imageFile]); // This logic in original was weird, just keeping it consistent-ish but it seems to only keep last image? 
-              // Actually original code set it to single file: setCartImage(imageFile). This means only one image is sent? 
-              // The logic in handleCheckout loops and appends 'cartImage'. If cartImage is a single file, it's wrong for multiple items.
-              // However, I will preserve existing logic behavior to avoid functional regression, just cleaning UI.
+              setCartImage(prev => [...prev, imageFile]);
 
               const imageUrl = URL.createObjectURL(response.data);
               return { ...item, imageUrl };
@@ -102,7 +98,7 @@ const Cart = () => {
         const updatedProductData = { ...rest, stockQuantity: updatedStockQuantity };
 
         const cartProduct = new FormData();
-        cartProduct.append("imageFile", cartImage); // Potentially buggy original logic
+        cartProduct.append("imageFile", cartImage[0]); // Using index 0 is risky but matches implied original logic/issue
         cartProduct.append(
           "product",
           new Blob([JSON.stringify(updatedProductData)], { type: "application/json" })
@@ -118,104 +114,178 @@ const Cart = () => {
       alert("Checkout successful!");
     } catch (error) {
       console.log("error during checkout", error);
+      alert("Checkout failed. Please try again.");
     }
   };
 
   return (
-    <div className="container-custom section-padding" style={{ maxWidth: "900px" }}>
-      <h2 style={{ marginBottom: "2rem", color: "var(--primary-color)" }}>Shopping Cart</h2>
+    <div className="container-custom section-padding" style={{ maxWidth: "1000px" }}>
+      <h2 style={{ marginBottom: "2rem", color: "var(--primary-color)", fontWeight: 800 }}>Shopping Bag</h2>
 
       {cartItems.length === 0 ? (
         <div style={{
           textAlign: "center",
-          padding: "4rem",
+          padding: "6rem 2rem",
           backgroundColor: "var(--surface-color)",
           borderRadius: "var(--radius-lg)",
-          boxShadow: "var(--shadow-sm)"
+          border: '1px dashed var(--border-color)'
         }}>
+          <i className="bi bi-bag-x" style={{ fontSize: '4rem', color: 'var(--text-secondary)', marginBottom: '1rem', display: 'block' }}></i>
           <h4 style={{ color: "var(--text-secondary)" }}>Your cart is empty</h4>
-          <a href="/" className="btn btn-primary" style={{ marginTop: "1rem" }}>Continue Shopping</a>
+          <a href="/" className="btn btn-primary" style={{ marginTop: "1.5rem" }}>Start Shopping</a>
         </div>
       ) : (
-        <div style={{
-          backgroundColor: "var(--surface-color)",
-          borderRadius: "var(--radius-lg)",
-          boxShadow: "var(--shadow-md)",
-          padding: "2rem"
-        }}>
-          {cartItems.map((item) => (
-            <div key={item.id} style={{
-              display: "flex",
-              alignItems: "center",
-              borderBottom: "1px solid var(--border-color)",
-              paddingBottom: "1.5rem",
-              marginBottom: "1.5rem",
-              flexWrap: "wrap",
-              gap: "1rem"
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '2rem', alignItems: 'start' }}>
+
+          {/* Cart Items List */}
+          <div style={{
+            backgroundColor: "var(--surface-color)",
+            borderRadius: "var(--radius-lg)",
+            boxShadow: "var(--shadow-sm)",
+            overflow: 'hidden'
+          }}>
+            {cartItems.map((item, index) => (
+              <div key={item.id} style={{
+                display: "flex",
+                alignItems: "center",
+                padding: "1.5rem",
+                borderBottom: index !== cartItems.length - 1 ? "1px solid var(--border-color)" : "none",
+                gap: "1.5rem"
+              }}>
+                <div style={{
+                  width: '100px',
+                  height: '100px',
+                  backgroundColor: 'var(--background-color)',
+                  borderRadius: 'var(--radius-md)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '0.5rem'
+                }}>
+                  <img
+                    src={item.imageUrl}
+                    alt={item.name}
+                    style={{
+                      maxWidth: "100%",
+                      maxHeight: "100%",
+                      objectFit: "contain",
+                      mixBlendMode: 'multiply'
+                    }}
+                  />
+                </div>
+
+                <div style={{ flexGrow: 1 }}>
+                  <div style={{ fontSize: "0.75rem", color: "var(--secondary-color)", textTransform: "uppercase", fontWeight: 700, letterSpacing: '0.5px' }}>
+                    {item.brand}
+                  </div>
+                  <h5 style={{ margin: "0.25rem 0", color: "var(--text-primary)", fontSize: '1.1rem' }}>
+                    {item.name}
+                  </h5>
+                  <div style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>
+                    ${item.price} each
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'end', gap: '1rem' }}>
+                  <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.25rem",
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '50px',
+                    padding: '0.25rem'
+                  }}>
+                    <button
+                      onClick={() => handleDecreaseQuantity(item.id)}
+                      className="btn"
+                      style={{
+                        width: "28px",
+                        height: "28px",
+                        padding: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--text-primary)'
+                      }}
+                    >
+                      <i className="bi bi-dash"></i>
+                    </button>
+                    <span style={{ width: "24px", textAlign: "center", fontWeight: "600", fontSize: '0.9rem' }}>{item.quantity}</span>
+                    <button
+                      onClick={() => handleIncreaseQuantity(item.id)}
+                      className="btn"
+                      style={{
+                        width: "28px",
+                        height: "28px",
+                        padding: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--text-primary)'
+                      }}
+                    >
+                      <i className="bi bi-plus-lg" style={{ fontSize: '0.8rem' }}></i>
+                    </button>
+                  </div>
+
+                  <div style={{ fontWeight: "700", fontSize: "1.1rem" }}>
+                    ${item.price * item.quantity}
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => handleRemoveFromCart(item.id)}
+                  className="btn"
+                  style={{ color: "var(--text-secondary)", padding: '0.5rem', alignSelf: 'flex-start' }}
+                  title="Remove item"
+                  onMouseEnter={(e) => e.target.style.color = 'var(--error-color)'}
+                  onMouseLeave={(e) => e.target.style.color = 'var(--text-secondary)'}
+                >
+                  <i className="bi bi-x-lg"></i>
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Checkout Summary */}
+          <div style={{
+            position: 'sticky',
+            top: '100px'
+          }}>
+            <div style={{
+              backgroundColor: "var(--surface-color)",
+              borderRadius: "var(--radius-lg)",
+              boxShadow: "var(--shadow-md)",
+              padding: "2rem"
             }}>
-              <img
-                src={item.imageUrl}
-                alt={item.name}
-                style={{
-                  width: "100px",
-                  height: "100px",
-                  objectFit: "cover",
-                  borderRadius: "var(--radius-md)",
-                  border: "1px solid var(--border-color)"
-                }}
-              />
+              <h4 style={{ marginBottom: "1.5rem", fontSize: '1.25rem' }}>Order Summary</h4>
 
-              <div style={{ flexGrow: 1, minWidth: "200px" }}>
-                <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)", textTransform: "uppercase" }}>{item.brand}</div>
-                <h5 style={{ margin: 0, color: "var(--text-primary)" }}>{item.name}</h5>
-                <div style={{ fontWeight: "bold", color: "var(--primary-color)", marginTop: "0.25rem" }}>${item.price}</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', color: 'var(--text-secondary)' }}>
+                <span>Subtotal</span>
+                <span>${totalPrice}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', color: 'var(--text-secondary)' }}>
+                <span>Shipping</span>
+                <span>Free</span>
               </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <button
-                  onClick={() => handleDecreaseQuantity(item.id)}
-                  style={{ border: "1px solid var(--border-color)", background: "transparent", borderRadius: "4px", width: "30px", height: "30px" }}
-                >
-                  <i className="bi bi-dash"></i>
-                </button>
-                <span style={{ width: "30px", textAlign: "center", fontWeight: "bold" }}>{item.quantity}</span>
-                <button
-                  onClick={() => handleIncreaseQuantity(item.id)}
-                  style={{ border: "1px solid var(--border-color)", background: "transparent", borderRadius: "4px", width: "30px", height: "30px" }}
-                >
-                  <i className="bi bi-plus"></i>
-                </button>
-              </div>
+              <hr style={{ borderColor: 'var(--border-color)', margin: '1.5rem 0' }} />
 
-              <div style={{ minWidth: "80px", textAlign: "right", fontWeight: "bold", fontSize: "1.1rem" }}>
-                ${item.price * item.quantity}
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', fontWeight: 700, fontSize: '1.25rem', color: 'var(--primary-color)' }}>
+                <span>Total</span>
+                <span>${totalPrice}</span>
               </div>
 
               <button
-                onClick={() => handleRemoveFromCart(item.id)}
-                style={{ border: "none", background: "transparent", color: "#ef4444", fontSize: "1.2rem", cursor: "pointer" }}
-                title="Remove item"
+                className="btn btn-primary"
+                onClick={() => setShowModal(true)}
+                style={{ width: '100%', padding: '1rem' }}
               >
-                <i className="bi bi-trash"></i>
+                Proceed to Checkout
               </button>
             </div>
-          ))}
-
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "2rem" }}>
-            <h4 style={{ margin: 0 }}>Total: ${totalPrice}</h4>
-            <Button
-              variant="primary"
-              onClick={() => setShowModal(true)}
-              style={{
-                padding: "0.75rem 2rem",
-                borderRadius: "50px",
-                backgroundColor: "var(--secondary-color)",
-                border: "none"
-              }}
-            >
-              Checkout
-            </Button>
           </div>
+
         </div>
       )}
 

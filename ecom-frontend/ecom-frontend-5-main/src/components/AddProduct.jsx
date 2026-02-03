@@ -21,7 +21,6 @@ const AddProduct = () => {
 
   const handleImageChange = (e) => {
     setImage(e.target.files[0]);
-    // setProduct({...product, image: e.target.files[0]})
   };
 
   const submitHandler = (event) => {
@@ -33,15 +32,24 @@ const AddProduct = () => {
       new Blob([JSON.stringify(product)], { type: "application/json" })
     );
 
-    API
-      .post("/product", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
+    API.post("/product", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
       .then((response) => {
-        console.log("Product added successfully:", response.data);
         alert("Product added successfully");
+        setProduct({
+          name: "",
+          brand: "",
+          description: "",
+          price: "",
+          category: "",
+          stockQuantity: "",
+          releaseDate: "",
+          productAvailable: false,
+        });
+        setImage(null);
       })
       .catch((error) => {
         console.error("Error adding product:", error);
@@ -50,151 +58,141 @@ const AddProduct = () => {
   };
 
   return (
-    <div className="container-custom section-padding" style={{ maxWidth: "800px" }}>
-      <div style={{ backgroundColor: "var(--surface-color)", padding: "2rem", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-md)" }}>
-        <h2 style={{ textAlign: "center", marginBottom: "2rem", color: "var(--primary-color)" }}>Add New Product</h2>
-        <form className="row g-3 pt-5" onSubmit={submitHandler}>
-          <div className="col-md-6">
-            <label className="form-label">
-              <h6>Name</h6>
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Product Name"
-              onChange={handleInputChange}
-              value={product.name}
-              name="name"
-            />
+    <div className="container-custom section-padding">
+      <div style={{
+        maxWidth: "800px",
+        margin: "0 auto",
+        backgroundColor: "var(--surface-color)",
+        borderRadius: "var(--radius-lg)",
+        boxShadow: "var(--shadow-md)",
+        padding: "3rem"
+      }}>
+        <h2 style={{ marginBottom: "2rem", color: "var(--primary-color)", textAlign: "center" }}>Add New Product</h2>
+
+        <form onSubmit={submitHandler}>
+          <div className="row">
+            <div className="col-md-6 mb-3">
+              <label className="form-label" style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>Product Name</label>
+              <input
+                type="text"
+                className="form-control-custom" // Using our custom class from index.css
+                name="name"
+                value={product.name}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="col-md-6 mb-3">
+              <label className="form-label" style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>Brand</label>
+              <input
+                type="text"
+                className="form-control-custom"
+                name="brand"
+                value={product.brand}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
           </div>
-          <div className="col-md-6">
-            <label className="form-label">
-              <h6>Brand</h6>
-            </label>
-            <input
-              type="text"
-              name="brand"
-              className="form-control"
-              placeholder="Enter your Brand"
-              value={product.brand}
-              onChange={handleInputChange}
-              id="brand"
-            />
-          </div>
-          <div className="col-12">
-            <label className="form-label">
-              <h6>Description</h6>
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Add product description"
-              value={product.description}
+
+          <div className="mb-3">
+            <label className="form-label" style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>Description</label>
+            <textarea
+              className="form-control-custom"
               name="description"
+              rows="4"
+              value={product.description}
               onChange={handleInputChange}
-              id="description"
-            />
-          </div>
-          <div className="col-5">
-            <label className="form-label">
-              <h6>Price</h6>
-            </label>
-            <input
-              type="number"
-              className="form-control"
-              placeholder="Eg: $1000"
-              onChange={handleInputChange}
-              value={product.price}
-              name="price"
-              id="price"
+              required
             />
           </div>
 
-          <div className="col-md-6">
-            <label className="form-label">
-              <h6>Category</h6>
-            </label>
-            <select
-              className="form-select"
-              value={product.category}
-              onChange={handleInputChange}
-              name="category"
-              id="category"
-            >
-              <option value="">Select category</option>
-              <option value="Laptop">Laptop</option>
-              <option value="Headphone">Headphone</option>
-              <option value="Mobile">Mobile</option>
-              <option value="Electronics">Electronics</option>
-              <option value="Toys">Toys</option>
-              <option value="Fashion">Fashion</option>
-            </select>
+          <div className="row">
+            <div className="col-md-6 mb-3">
+              <label className="form-label" style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>Price ($)</label>
+              <input
+                type="number"
+                className="form-control-custom"
+                name="price"
+                value={product.price}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="col-md-6 mb-3">
+              <label className="form-label" style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>Category</label>
+              <select
+                className="form-control-custom"
+                name="category"
+                value={product.category}
+                onChange={handleInputChange}
+                required
+              >
+                <option value="">Select Category</option>
+                <option value="Laptop">Laptop</option>
+                <option value="Headphone">Headphone</option>
+                <option value="Mobile">Mobile</option>
+                <option value="Electronics">Electronics</option>
+                <option value="Toys">Toys</option>
+                <option value="Fashion">Fashion</option>
+              </select>
+            </div>
           </div>
 
-          <div className="col-md-4">
-            <label className="form-label">
-              <h6>Stock Quantity</h6>
-            </label>
-            <input
-              type="number"
-              className="form-control"
-              placeholder="Stock Remaining"
-              onChange={handleInputChange}
-              value={product.stockQuantity}
-              name="stockQuantity"
-              // value={`${stockAlert}/${stockQuantity}`}
-              id="stockQuantity"
-            />
+          <div className="row">
+            <div className="col-md-6 mb-3">
+              <label className="form-label" style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>Stock Quantity</label>
+              <input
+                type="number"
+                className="form-control-custom"
+                name="stockQuantity"
+                value={product.stockQuantity}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="col-md-6 mb-3">
+              <label className="form-label" style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>Release Date</label>
+              <input
+                type="date"
+                className="form-control-custom"
+                name="releaseDate"
+                value={product.releaseDate}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
           </div>
-          <div className="col-md-4">
-            <label className="form-label">
-              <h6>Release Date</h6>
-            </label>
+
+          <div className="mb-4">
+            <label className="form-label" style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>Product Image</label>
             <input
-              type="date"
-              className="form-control"
-              value={product.releaseDate}
-              name="releaseDate"
-              onChange={handleInputChange}
-              id="releaseDate"
-            />
-          </div>
-          {/* <input className='image-control' type="file" name='file' onChange={(e) => setProduct({...product, image: e.target.files[0]})} />
-    <button className="btn btn-primary" >Add Photo</button>  */}
-          <div className="col-md-4">
-            <label className="form-label">
-              <h6>Image</h6>
-            </label>
-            <input
-              className="form-control"
               type="file"
+              className="form-control-custom"
               onChange={handleImageChange}
             />
           </div>
-          <div className="col-12">
-            <div className="form-check">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                name="productAvailable"
-                id="gridCheck"
-                checked={product.productAvailable}
-                onChange={(e) =>
-                  setProduct({ ...product, productAvailable: e.target.checked })
-                }
-              />
-              <label className="form-check-label">Product Available</label>
-            </div>
+
+          <div className="form-check mb-4">
+            <input
+              className="form-check-input"
+              type="checkbox"
+              name="productAvailable"
+              id="gridCheck"
+              checked={product.productAvailable}
+              onChange={(e) =>
+                setProduct({ ...product, productAvailable: e.target.checked })
+              }
+              style={{ accentColor: 'var(--secondary-color)' }}
+            />
+            <label className="form-check-label" htmlFor="gridCheck" style={{ color: 'var(--text-primary)' }}>
+              Product available in stock
+            </label>
           </div>
-          <div className="col-12">
-            <button
-              type="submit"
-              className="btn btn-primary"
-            // onClick={submitHandler}
-            >
-              Submit
-            </button>
-          </div>
+
+          <button type="submit" className="btn btn-primary" style={{ width: '100%', borderRadius: 'var(--radius-md)' }}>
+            Submit Product
+          </button>
         </form>
       </div>
     </div>

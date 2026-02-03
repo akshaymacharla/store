@@ -1,24 +1,34 @@
 :root {
-    /* Color Palette */
+    /* Color Palette - Modern & Premium */
     --primary-color: #0f172a;
-    /* Deep Navy */
+    /* Slate 900 - Deep, professional dark */
     --secondary-color: #3b82f6;
-    /* Bright Blue */
+    /* Blue 500 - Vibrant action color */
+    --secondary-hover: #2563eb;
+    /* Blue 600 */
     --accent-color: #f59e0b;
-    /* Amber */
+    /* Amber 500 - For highlights/warnings */
+
     --background-color: #f8fafc;
-    /* Very Light Blue/Gray */
+    /* Slate 50 - Soft, airy background */
     --surface-color: #ffffff;
-    /* White */
+    /* Pure white surface */
+
     --text-primary: #1e293b;
-    /* Slate 800 */
+    /* Slate 800 - High contrast text */
     --text-secondary: #64748b;
-    /* Slate 500 */
+    /* Slate 500 - Muted text */
+
     --border-color: #e2e8f0;
-    /* Slate 200 */
+    /* Slate 200 - Subtle borders */
+
+    --success-color: #10b981;
+    /* Emerald 500 */
+    --error-color: #ef4444;
+    /* Red 500 */
 
     /* Typography */
-    --font-family-sans: 'Inter', sans-serif;
+    --font-family-sans: 'Inter', system-ui, -apple-system, sans-serif;
     --font-family-serif: 'Playfair Display', serif;
 
     /* Spacing */
@@ -27,35 +37,45 @@
     --spacing-md: 1rem;
     --spacing-lg: 1.5rem;
     --spacing-xl: 3rem;
+    --spacing-xxl: 5rem;
 
-    /* Shadows */
+    /* Shadows - Soft & Layered */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 
     /* Radius */
     --radius-sm: 0.375rem;
     --radius-md: 0.5rem;
     --radius-lg: 1rem;
+    --radius-xl: 1.5rem;
 }
 
 body.dark-theme {
     --primary-color: #f8fafc;
     /* Slate 50 */
     --secondary-color: #60a5fa;
-    /* Light Blue */
+    /* Blue 400 */
+    --secondary-hover: #3b82f6;
+    /* Blue 500 */
+
     --background-color: #0f172a;
     /* Slate 900 */
     --surface-color: #1e293b;
     /* Slate 800 */
+
     --text-primary: #f1f5f9;
     /* Slate 100 */
     --text-secondary: #94a3b8;
     /* Slate 400 */
+
     --border-color: #334155;
     /* Slate 700 */
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3);
+
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
 }
 
 *,
@@ -73,8 +93,10 @@ body {
     color: var(--text-primary);
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Headings */
 h1,
 h2,
 h3,
@@ -83,24 +105,17 @@ h5,
 h6 {
     font-family: var(--font-family-serif);
     font-weight: 700;
-    line-height: 1.2;
+    line-height: 1.25;
     color: var(--primary-color);
     margin-bottom: var(--spacing-md);
+    letter-spacing: -0.02em;
 }
 
+/* Links */
 a {
     text-decoration: none;
     color: inherit;
-    transition: color 0.2s ease;
-}
-
-button {
-    font-family: var(--font-family-sans);
-}
-
-img {
-    max-width: 100%;
-    display: block;
+    transition: all 0.2s ease;
 }
 
 /* Utilities */
@@ -112,4 +127,56 @@ img {
 
 .section-padding {
     padding: var(--spacing-xl) 0;
+}
+
+/* Buttons */
+.btn {
+    border: none;
+    outline: none;
+    cursor: pointer;
+    font-family: var(--font-family-sans);
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    font-size: 1rem;
+    box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover {
+    background-color: var(--secondary-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Forms */
+.form-control-custom {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background-color: var(--surface-color);
+    color: var(--text-primary);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control-custom:focus {
+    outline: none;
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* Cards */
+.card-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-xl);
 }

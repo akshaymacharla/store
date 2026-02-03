@@ -52,8 +52,9 @@ const Home = ({ selectedCategory }) => {
   if (isError) {
     return (
       <div className="d-flex flex-column justify-content-center align-items-center" style={{ minHeight: "80vh" }}>
-        <img src={unplugged} alt="Error" style={{ width: "150px", marginBottom: "1rem" }} />
-        <h2 style={{ color: "var(--text-primary)" }}>Something went wrong...</h2>
+        <img src={unplugged} alt="Error" style={{ width: "150px", marginBottom: "2rem", opacity: 0.8 }} />
+        <h2 style={{ color: "var(--text-primary)", fontWeight: 700 }}>Something went wrong...</h2>
+        <p style={{ color: "var(--text-secondary)" }}>Please check your connection and try again.</p>
       </div>
     );
   }
@@ -62,100 +63,125 @@ const Home = ({ selectedCategory }) => {
     <>
       {/* Hero Section */}
       <section style={{
-        marginTop: "0",
-        backgroundColor: "var(--background-color)",
-        padding: "4rem 0",
+        background: "linear-gradient(135deg, var(--surface-color) 0%, var(--background-color) 100%)",
+        padding: "5rem 0 3rem 0",
         textAlign: "center",
-        borderBottom: "1px solid var(--border-color)"
+        borderBottom: "1px solid var(--border-color)",
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        <div className="container-custom">
-          <h1 style={{ fontSize: "3rem", marginBottom: "1rem" }}>Welcome to the Store</h1>
-          <p style={{ fontSize: "1.25rem", color: "var(--text-secondary)", marginBottom: "2rem", maxWidth: "600px", margin: "0 auto 2rem auto" }}>
-            Discover the latest in technology and lifestyle. Premium quality, best prices.
+        {/* Abstract background blobs could go here */}
+        <div className="container-custom" style={{ position: 'relative', zIndex: 1 }}>
+          <h1 style={{
+            fontSize: "clamp(2.5rem, 5vw, 4rem)",
+            marginBottom: "1.5rem",
+            background: "linear-gradient(to right, var(--primary-color), var(--secondary-color))",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            display: "inline-block"
+          }}>
+            Welcome to the Store
+          </h1>
+          <p style={{
+            fontSize: "1.25rem",
+            color: "var(--text-secondary)",
+            marginBottom: "2.5rem",
+            maxWidth: "600px",
+            margin: "0 auto 2.5rem auto",
+            lineHeight: 1.6
+          }}>
+            Discover the latest in technology and lifestyle. <br />Premium quality products at the best prices.
           </p>
           <a href="#products-grid" className="btn btn-primary" style={{
-            backgroundColor: "var(--secondary-color)",
-            borderColor: "var(--secondary-color)",
-            padding: "0.75rem 1.5rem",
+            padding: "1rem 2.5rem",
             fontSize: "1.1rem",
-            borderRadius: "50px"
+            borderRadius: "50px",
+            boxShadow: "0 10px 20px -5px rgba(59, 130, 246, 0.4)"
           }}>
-            Shop Now
+            Shop Collection
           </a>
         </div>
       </section>
 
       {/* Products Grid */}
       <div id="products-grid" className="container-custom section-padding">
+
+        <div style={{ marginBottom: "3rem", display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3 style={{ margin: 0, fontSize: '2rem' }}>
+            {selectedCategory ? `${selectedCategory} Collection` : "Featured Products"}
+          </h3>
+          <span style={{ color: 'var(--text-secondary)' }}>
+            {filteredProducts.length} Products
+          </span>
+        </div>
+
         {filteredProducts.length === 0 ? (
           <div className="text-center py-5">
-            <h2 style={{ color: "var(--text-secondary)" }}>No Products Available</h2>
+            <h4 style={{ color: "var(--text-secondary)" }}>No Products Available</h4>
           </div>
         ) : (
           <div style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-            gap: "2rem",
+            gap: "2.5rem",
           }}>
             {filteredProducts.map((product) => {
               const { id, brand, name, price, productAvailable, imageUrl } = product;
               return (
                 <div
                   key={id}
-                  className="card"
+                  className="card card-hover"
                   style={{
                     border: "none",
                     borderRadius: "var(--radius-lg)",
                     backgroundColor: "var(--surface-color)",
-                    boxShadow: "var(--shadow-sm)",
                     overflow: "hidden",
-                    transition: "transform 0.3s ease, box-shadow 0.3s ease",
                     display: "flex",
                     flexDirection: "column",
                     height: "100%",
                     textDecoration: "none",
-                    opacity: productAvailable ? 1 : 0.7
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "translateY(-5px)";
-                    e.currentTarget.style.boxShadow = "var(--shadow-lg)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.boxShadow = "var(--shadow-sm)";
+                    boxShadow: "var(--shadow-md)",
+                    position: 'relative'
                   }}
                 >
                   <Link to={`/product/${id}`} style={{ flexGrow: 1, textDecoration: "none", color: "inherit", display: 'flex', flexDirection: 'column' }}>
                     <div style={{
-                      height: "220px",
+                      height: "260px",
                       overflow: "hidden",
-                      backgroundColor: "#f1f5f9",
-                      position: 'relative'
+                      backgroundColor: "var(--background-color)",
+                      position: 'relative',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '2rem'
                     }}>
                       <img
                         src={imageUrl}
                         alt={name}
                         style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "contain", /* improved from cover to contain for full product visibility */
-                          padding: "1rem",
-                          mixBlendMode: "multiply" /* helps with white backgrounds */
+                          maxWidth: "100%",
+                          maxHeight: "100%",
+                          objectFit: "contain",
+                          mixBlendMode: "multiply",
+                          transition: "transform 0.5s ease"
                         }}
+                        onMouseEnter={(e) => e.target.style.transform = "scale(1.05)"}
+                        onMouseLeave={(e) => e.target.style.transform = "scale(1)"}
                       />
                       {!productAvailable && (
                         <div style={{
                           position: 'absolute',
-                          top: 10,
-                          right: 10,
-                          backgroundColor: '#ef4444',
+                          top: 15,
+                          right: 15,
+                          backgroundColor: 'rgba(239, 68, 68, 0.9)',
                           color: 'white',
-                          padding: '0.25rem 0.5rem',
-                          borderRadius: '4px',
+                          padding: '0.25rem 0.75rem',
+                          borderRadius: '50px',
                           fontSize: '0.75rem',
-                          fontWeight: 'bold'
+                          fontWeight: 700,
+                          backdropFilter: 'blur(4px)'
                         }}>
-                          OUT OF STOCK
+                          SOLD OUT
                         </div>
                       )}
                     </div>
@@ -165,16 +191,16 @@ const Home = ({ selectedCategory }) => {
                       flexGrow: 1,
                       display: "flex",
                       flexDirection: "column",
-                      textAlign: "left" /* Align left for modern look */
+                      borderTop: "1px solid var(--border-color)"
                     }}>
                       <div style={{ marginBottom: "auto" }}>
                         <p style={{
-                          fontSize: "0.85rem",
+                          fontSize: "0.8rem",
                           color: "var(--secondary-color)",
                           fontWeight: 600,
                           textTransform: "uppercase",
-                          letterSpacing: "0.5px",
-                          marginBottom: "0.25rem"
+                          letterSpacing: "0.05em",
+                          marginBottom: "0.5rem"
                         }}>
                           {brand}
                         </p>
@@ -182,7 +208,8 @@ const Home = ({ selectedCategory }) => {
                           fontSize: "1.1rem",
                           fontWeight: 700,
                           marginBottom: "0.5rem",
-                          color: "var(--primary-color)"
+                          color: "var(--text-primary)",
+                          lineHeight: 1.4
                         }}>
                           {name}
                         </h5>
@@ -192,12 +219,12 @@ const Home = ({ selectedCategory }) => {
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
-                        marginTop: "1rem"
+                        marginTop: "1.25rem"
                       }}>
                         <span style={{
                           fontSize: "1.25rem",
                           fontWeight: 700,
-                          color: "var(--text-primary)"
+                          color: "var(--primary-color)"
                         }}>
                           ${price}
                         </span>
@@ -205,16 +232,16 @@ const Home = ({ selectedCategory }) => {
                         <button
                           className="btn"
                           style={{
-                            backgroundColor: productAvailable ? "var(--primary-color)" : "#cbd5e1",
+                            backgroundColor: productAvailable ? "var(--primary-color)" : "var(--border-color)",
                             color: "white",
                             borderRadius: "50%",
-                            width: "40px",
-                            height: "40px",
+                            width: "42px",
+                            height: "42px",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
                             padding: 0,
-                            transition: "background-color 0.2s"
+                            transition: "all 0.2s ease"
                           }}
                           onClick={(e) => {
                             e.preventDefault();
@@ -223,7 +250,7 @@ const Home = ({ selectedCategory }) => {
                           disabled={!productAvailable}
                           title="Add to Cart"
                         >
-                          <i className="bi bi-cart-plus-fill"></i>
+                          <i className="bi bi-plus-lg" style={{ fontSize: '1.2rem' }}></i>
                         </button>
                       </div>
                     </div>
