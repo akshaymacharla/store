@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../axios";
 
 const Navbar = ({ onSelectCategory }) => {
   const getInitialTheme = () => {
@@ -21,8 +21,8 @@ const Navbar = ({ onSelectCategory }) => {
     if (value.length >= 1) {
       setShowSearchResults(true);
       try {
-        const response = await axios.get(
-          `http://localhost:8080/api/products/search?keyword=${value}`
+        const response = await API.get(
+          `/products/search?keyword=${value}`
         );
         setSearchResults(response.data);
         setNoResults(response.data.length === 0);
