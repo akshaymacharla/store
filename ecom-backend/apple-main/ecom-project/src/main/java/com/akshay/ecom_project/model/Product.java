@@ -14,6 +14,10 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "products", indexes = {
+    @Index(name = "idx_product_name", columnList = "name"),
+    @Index(name = "idx_product_brand", columnList = "brand")
+})
 public class Product {
 
     @Id
@@ -23,7 +27,10 @@ public class Product {
     private String description;
     private String brand;
     private BigDecimal price;
-    private String category;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private Category category;
 
     private Date releaseDate;
     private boolean productAvailable;

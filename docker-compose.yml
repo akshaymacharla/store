@@ -1,0 +1,74 @@
+version: "3.9"
+
+services:
+  # ── MySQL Database ──────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: ecom-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ecomdb
+      MYSQL_USER: ${DB_USERNAME:-ecomuser}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-ecompassword}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ecom-network
+
+  # ── Spring Boot Backend ─────────────────────────────────────────
+  backend:
+    build:
+      context: ./ecom-backend/apple-main/ecom-project
+      dockerfile: Dockerfile
+    container_name: ecom-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ecomdb?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-ecomuser}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-ecompassword}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      JWT_SECRET: ${JWT_SECRET:-CHANGE_THIS_SECRET_IN_PRODUCTION_12345678}
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ecom-network
+
+  # ── React Frontend (Nginx) ──────────────────────────────────────
+  frontend:
+    build:
+      context: ./ecom-frontend/ecom-frontend-5-main
+      dockerfile: Dockerfile
+    container_name: ecom-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "80:80"
+    networks:
+      - ecom-network
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  ecom-network:
+    driver: bridge
